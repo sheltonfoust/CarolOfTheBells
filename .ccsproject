@@ -13,7 +13,7 @@
 	<createSlaveProjects value=""/>
 	<ignoreDefaultDeviceSettings value="true"/>
 	<ignoreDefaultCCSSettings value="true"/>
-	<templateProperties value="id=uartecho_MSP_EXP432E401Y_nortos_ccs.projectspec.uartecho_MSP_EXP432E401Y_nortos_ccs,buildProfile=release,isHybrid=true"/>
-	<origin value="C:\ti\simplelink_msp432e4_sdk_4_20_00_12\examples\nortos\MSP_EXP432E401Y\drivers\uartecho\ccs\uartecho_MSP_EXP432E401Y_nortos_ccs.projectspec"/>
+	<templateProperties value="id=gpiointerrupt_MSP_EXP432E401Y_nortos_ccs.projectspec.gpiointerrupt_MSP_EXP432E401Y_nortos_ccs,buildProfile=release,isHybrid=true"/>
+	<origin value="C:\ti\simplelink_msp432e4_sdk_4_20_00_12\examples\nortos\MSP_EXP432E401Y\drivers\gpiointerrupt\ccs\gpiointerrupt_MSP_EXP432E401Y_nortos_ccs.projectspec"/>
 	<filesToOpen value=""/>
 </projectOptions>

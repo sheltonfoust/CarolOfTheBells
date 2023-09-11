@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,28 +25,36 @@
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// @cliArgs --board /ti/boards/MSP_EXP432E401Y
 
 /*
- *  uartecho.syscfg
+ *  ======== main_nortos.c ========
  */
+#include <stdint.h>
+#include <stddef.h>
 
-/* ======== RTOS ======== */
-var RTOS = scripting.addModule("/ti/drivers/RTOS");
-RTOS.name = "NoRTOS";
+#include <NoRTOS.h>
 
-/* ======== GPIO ======== */
-var GPIO = scripting.addModule("/ti/drivers/GPIO");
-var gpio = GPIO.addInstance();
-gpio.$hardware = system.deviceData.board.components.LED0;
-gpio.$name = "CONFIG_GPIO_LED_0";
+#include <ti/drivers/Board.h>
 
-/* ======== UART ======== */
-var UART = scripting.addModule("/ti/drivers/UART");
-var uart = UART.addInstance();
-uart.$hardware = system.deviceData.board.components.XDS110UART;
-uart.$name = "CONFIG_UART_0";
+extern void *mainThread(void *arg0);
+
+/*
+ *  ======== main ========
+ */
+int main(void)
+{
+    Board_init();
+
+    /* Start NoRTOS */
+    NoRTOS_start();
+
+    /* Call mainThread function */
+    mainThread(NULL);
+
+    while (1) {}
+}
