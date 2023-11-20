@@ -4,17 +4,14 @@
 #define SIG_LEN 7500
 #define MS 1000 / 8
 
-#define CAROL_LEN 41 * 6
 #define START_LEN 38
-
-
-
-
-#define CAROL_TEMPO 120
 #define START_TEMPO 480
 
+#define BING_LEN 4
+#define BING_TEMPO 70
 
-
+#define CAROL_LEN 41 * 6
+#define CAROL_TEMPO 120
 
 #define NUMBELLS 12
 
@@ -66,17 +63,30 @@
 #define P2_1 LB
 
 
-void playNote(uint32_t* song, int MSperiod);
+typedef struct _Song
+{
+    uint32_t* notes;
+    int length;
+    int tempo;
+} Song;
+
+
+void playNote();
 
 
 extern int noteIndex = 0;
 extern int32_t tickIndex = -1;
-extern int changeFlag = 0;
+extern int tickChangeFlag = 0;
+
+extern int songChangeFlag = 0;
+Song selectedSong;
 
 
 
 
-uint32_t startUpSong[START_LEN] =
+
+
+uint32_t startUpNotes[START_LEN] =
 {
      R4,
      LB, CS, DS, E, FS, G, GS, A, B, C, HD, HE,
@@ -87,7 +97,7 @@ uint32_t startUpSong[START_LEN] =
 
 
 
-uint32_t carolOfTheBells[CAROL_LEN] =
+uint32_t carolOfTheBellsNotes[CAROL_LEN] =
 {
     R6,
     G,  R,      FS, G,      E,  R, // 12 measures of main theme
@@ -142,6 +152,10 @@ uint32_t carolOfTheBells[CAROL_LEN] =
     R6,
 };
 
+uint32_t bingBongNotes[BING_LEN] =
+{
+     A, R, B, R
+};
 
 
 
@@ -177,41 +191,73 @@ int main(void)
     TA0CCTL0 |= CCIE;
     TA0CTL = TASSEL_2 + ID_3 + MC_1; //Select SMCLK, SMCLK/1, Up Mode
 
+    Song carolOfTheBells;
+    Song bingBong;
+    Song startUp;
 
-    while (noteIndex < START_LEN)
+    carolOfTheBells.notes = carolOfTheBellsNotes;
+    carolOfTheBells.length = CAROL_LEN;
+    carolOfTheBells.tempo = CAROL_TEMPO;
+
+    bingBong.notes = bingBongNotes;
+    bingBong.length = BING_LEN;
+    bingBong.tempo = BING_TEMPO;
+
+    startUp.notes = startUpNotes;
+    startUp.length = START_LEN;
+    startUp.tempo = START_TEMPO;
+
+    selectedSong = startUp;
+    while (noteIndex < selectedSong.length)
     {
-        playNote(startUpSong, START_TEMPO);
+        playNote();
     }
 
 
     noteIndex = 0;
 
+    selectedSong = carolOfTheBells;
+    songChangeFlag = 0;
     while (1)
     {
 
-        if (noteIndex == CAROL_LEN)
+        if (songChangeFlag == 1)
+        {
+            noteIndex = 0;
+            songChangeFlag = 0;
+            if (selectedSong.notes == bingBong.notes)
+            {
+                selectedSong = carolOfTheBells;
+            }
+            else if (selectedSong.notes == carolOfTheBells.notes)
+            {
+                selectedSong = bingBong;
+            }
+
+        }
+
+        if (noteIndex == selectedSong.length)
         {
             noteIndex = 0;
         }
 
-        playNote(carolOfTheBells, CAROL_TEMPO);
+        playNote();
 
     }
 }
 
-void playNote(uint32_t* song, int tempo)
+void playNote()
 {
-    int period = 30000 / tempo;
-    if (changeFlag == 1)
+    uint32_t* song = selectedSong.notes;
+    int period = 30000 / selectedSong.tempo;
+    if (tickChangeFlag == 1)
     {
-        changeFlag = 0;
+        tickChangeFlag = 0;
         if (tickIndex < period)
         {
             return;
         }
         tickIndex = 0;
-
-
 
         if ((song[noteIndex] & P3_7) == P3_7)
         {
@@ -277,7 +323,6 @@ void playNote(uint32_t* song, int tempo)
         P1OUT &= ~BIT5;
         P2OUT &= ~BIT1;
 
-
         noteIndex++;
 
     }
@@ -289,5 +334,5 @@ void playNote(uint32_t* song, int tempo)
 __interrupt void TIMER0_A0_ISR(void)
 {
     tickIndex++;
-    changeFlag = 1;
+    tickChangeFlag = 1;
 }
