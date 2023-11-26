@@ -1,12 +1,17 @@
 #include <msp430.h> 
 #include <stdint.h>
+#include <string.h>
 
 #define SIG_LEN 7500
 #define TRILL_LEN 7500
 #define MS 1000 / 8
 
 #define START_LEN 38
-#define START_TEMPO 480
+#define START_TEMPO 90
+
+#define CAROL 0
+#define BING 1
+#define NUM_SONGS 2
 
 #define BING_LEN 24
 #define BING_TEMPO 70
@@ -15,6 +20,11 @@
 #define CAROL_TEMPO 120
 
 #define NUMBELLS 12
+
+#define MAX_LEN 50
+#define SCROLL_TIME 250000
+
+#define WELCOME_MSG "PRESS BUTTON TO START "
 
 #define E_6 11
 #define D_6 10
@@ -104,18 +114,28 @@ typedef struct _Song
 
 
 void playNote();
+void showChar(char c, unsigned short position);
+void wait(int numTimePeriods);
+extern void LCDini(void);
 
 
+extern int playState = 0;
 extern int noteIndex = 0;
 extern int32_t tickIndex = -1;
 extern int tickChangeFlag = 0;
-
-extern int songChangeFlag = 0;
+extern int playFlag = 0;
+extern int songChangedFlag = 0;
 Song selectedSong;
 extern uint32_t trillStates = 0;
 
 
+// The Position accounts for Offset of Alphanumeric character positions in the LCD Memory Map
+short Pos[6] = {9, 5, 3, 18, 14, 7}; // Define and populate Position, Range 0 - 5
 
+char text[MAX_LEN];
+int scrollPos;
+int song;
+uint32_t scrollTimeIndex;
 
 
 
@@ -204,6 +224,34 @@ int main(void)
 
     __enable_interrupt();
 
+
+
+
+    LCDini();                                   // Initialize the LCD
+
+    // ******************************************************************************************
+    // **********                   CAROL OF THE BELLS                                ***********
+    // **********                        LCD CODE                                     ***********
+    // **********               SCROLLS ACROSS DISPLAY                                ***********
+    // ******************************************************************************************
+
+        P4DIR &= ~BIT1;                             // Set P1.1 to input direction
+        P4REN |= BIT1;                              // Enable Resistor on P1.1, Button 1
+        P4OUT |= BIT1;                              // Enable Pull-up  on P1.1, Button 1
+        P4DIR &= ~BIT2;                             // Set P1.2 to input direction
+        P4REN |= BIT2;                              // Enable Resistor on P1.1, Button 2
+        P4OUT |= BIT2;                              // Enable Pull-up  on P1.1, Button 2
+
+        //  Configure P1.1 & P1.2 for falling edge Interrupt
+            P4IES |=  BIT1;                             // Select Interrupts for HIGH to LOW Transition
+            P4IFG &= ~BIT1;                             // Clear  P1.1 Interrupt flag
+            P4IE  |=  BIT1;                             // Enable P1.1 Interrupt
+            P4IES |=  BIT2;                             // Select Interrupts for HIGH to LOW Transition
+            P4IFG &= ~BIT2;                             // Clear  P1.2 Interrupt flag
+            P4IE  |=  BIT2;                             // Enable P1.2 Interrupt
+
+
+
     // Set output directions
     P3DIR |= BIT7;
     P3DIR |= BIT6;
@@ -226,6 +274,14 @@ int main(void)
     TA0CCR0 = MS;
     TA0CCTL0 |= CCIE;
     TA0CTL = TASSEL_2 + ID_3 + MC_1; //Select SMCLK, SMCLK/1, Up Mode
+
+
+    strncpy(text, WELCOME_MSG, strlen(WELCOME_MSG));
+    scrollPos = 0;
+    scrollTimeIndex = 0;
+
+
+
 
     Song carolOfTheBells;
     Song bingBong;
@@ -253,21 +309,28 @@ int main(void)
     noteIndex = 0;
 
     selectedSong = carolOfTheBells;
-    songChangeFlag = 0;
+    songChangedFlag = 0;
     while(1)
     {
 
-        if (songChangeFlag == 1)
+        if (songChangedFlag == 1)
         {
             noteIndex = 0;
-            songChangeFlag = 0;
-            if (selectedSong.notes == bingBong.notes)
+            songChangedFlag = 0;
+
+            song++;
+            if (song == NUM_SONGS)
             {
-                selectedSong = carolOfTheBells;
+                song = 0;
             }
-            else if (selectedSong.notes == carolOfTheBells.notes)
+
+            if (song == BING)
             {
                 selectedSong = bingBong;
+            }
+            else if (song == CAROL)
+            {
+                selectedSong = carolOfTheBells;
             }
 
         }
@@ -351,7 +414,7 @@ void playNote()
 
 
 
-        __delay_cycles(SIG_LEN);
+        wait(1);
 
         P3OUT &= ~BIT7;
         P3OUT &= ~BIT6;
@@ -366,8 +429,8 @@ void playNote()
         P1OUT &= ~BIT5;
         P2OUT &= ~BIT1;
 
-        __delay_cycles(4 * SIG_LEN);
-        __delay_cycles(4 * SIG_LEN);
+        wait(4);
+        wait(4);
 
         trillCounter -= 1;
         while (trillCounter > 0)
@@ -423,7 +486,7 @@ void playNote()
             {
                 P2OUT |= BIT1;
             }
-            __delay_cycles(SIG_LEN);
+            wait(1);
 
             P3OUT &= ~BIT7;
             P3OUT &= ~BIT6;
@@ -438,8 +501,8 @@ void playNote()
             P1OUT &= ~BIT5;
             P2OUT &= ~BIT1;
 
-            __delay_cycles(4 * SIG_LEN);
-            __delay_cycles(4 * SIG_LEN);
+            wait(4);
+            wait(4);
         }
 
 
@@ -452,10 +515,166 @@ void playNote()
 }
 
 
+void wait(int numTimePeriods)
+{
+    int timePeriodIndex = 0;
+
+    while(timePeriodIndex < numTimePeriods)
+    {
+        if (scrollTimeIndex >= SCROLL_TIME)
+        {
+            scrollTimeIndex = 0;
+            int textLen = strlen(text);
+            int i;
+            for (i = 0; i < 6; i++)
+            {
+                showChar(text[(scrollPos + i) % textLen], Pos[i]);
+            }
+
+            scrollPos = (scrollPos + 1) % textLen;
+        }
+        else
+        {
+            scrollTimeIndex += SIG_LEN;
+        }
+        __delay_cycles(SIG_LEN);
+        timePeriodIndex++;
+    }
+}
+
+
+
+
+void showChar(char c, unsigned short position)
+{
+// Space/Number Characters:  [  SP   ]  [   !   ]  [   "   ]  [   #   ]  [   $   ]  [   %   ]  [   &   ]  [   '   ]  [   (   ]  [   )   ]  [   *   ]  [   +   ]  [   ,   ]
+const char sp_num[26][2]  = {0x00,0x00, 0x60,0x01, 0x40,0x40, 0x61,0x50, 0xB7,0x50, 0x00,0x29, 0x10,0xCA, 0x00,0x20, 0x00,0x22, 0x00,0x88, 0x03,0xAA, 0x03,0x50, 0x00,0x08,
+                             0x03,0x00, 0x00,0x01, 0x00,0x28, 0xFC,0x28, 0x60,0x20, 0xDB,0x00, 0xF3,0x00, 0x67,0x00, 0xB7,0x00, 0xBF,0x00, 0xE4,0x00, 0xFF,0x00, 0xF7,0x00};
+// Space/Number Characters:  [   -   ]  [   .   ]  [   /   ]  [   0   ]  [   1   ]  [   2   ]  [   3   ]  [   4   ]  [   5   ]  [   6   ]  [   7   ]  [   8   ]  [   9   ]
+
+// Upper Case Characters:    [   A   ]  [   B   ]  [   C   ]  [   D   ]  [   E   ]  [   F   ]  [   G   ]  [   H   ]  [   I   ]  [   J   ]  [   K   ]  [   L   ]  [   M   ]
+const char  upper[26][2]  = {0xEF,0x00, 0xF1,0x50, 0x9C,0x00, 0xF0,0x50, 0x9F,0x00, 0x8F,0x00, 0xBD,0x00, 0x6F,0x00, 0x90,0x50, 0x78,0x00, 0x0E,0x22, 0x1C,0x00, 0x6C,0xA0,
+                             0x6C,0x82, 0xFC,0x00, 0xCF,0x00, 0xFC,0x02, 0xCF,0x02, 0xB7,0x00, 0x80,0x50, 0x7C,0x00, 0x0C,0x28, 0x6C,0x0A, 0x00,0xAA, 0x00,0xB0, 0x90,0x28};
+// Upper Case Characters:    [   N   ]  [   O   ]  [   P   ]  [   Q   ]  [   R   ]  [   S   ]  [   T   ]  [   U   ]  [   V   ]  [   W   ]  [   X   ]  [   Y   ]  [   Z   ]
+
+// Lower Case Characters:    [   a   ]  [   b   ]  [   c   ]  [   d   ]  [   e   ]  [   f   ]  [   g   ]  [   h   ]  [   i   ]  [   J   ]  [   k   ]  [   l   ]  [   m   ]
+const char  lower[26][2]  = {0x21,0x12, 0x3F,0x00, 0x1B,0x00, 0x7B,0x00, 0x1A,0x08, 0x0E,0x00, 0xF7,0x00, 0x2F,0x00, 0x10,0x10, 0x78,0x00, 0x00,0x72, 0x0C,0x00, 0x2B,0x10,
+                             0x21,0x10, 0x0A,0x18, 0xCF,0x00, 0xE7,0x00, 0x0A,0x00, 0x11,0x02, 0x03,0x10, 0x38,0x00, 0x08,0x08, 0x28,0x0A, 0x00,0xAA, 0x00,0xA8, 0x12,0x08};
+// Lower Case Characters:    [   n   ]  [   o   ]  [      ]  [   q   ]  [   r   ]  [   s   ]  [   t   ]  [   u   ]  [   v   ]  [   w   ]  [   x   ]  [   y   ]  [   z   ]
+
+    if (c >= ' ' && c <= '9')
+      {
+        // Display special printable characters & Numbers
+        LCDMEM[position]   =  sp_num[c-32][0];
+        LCDMEM[position+1] =  sp_num[c-32][1];
+      }
+    else if (c >= 'A' && c <= 'Z')
+      {
+        // Display Upper-case Letters
+        LCDMEM[position]   = upper[c-65][0];
+        LCDMEM[position+1] = upper[c-65][1];
+      }
+    else if (c >= 'a' && c <= 'z')
+      {
+        // Display lower-case letters
+        LCDMEM[position]   = lower[c-97][0];
+        LCDMEM[position+1] = lower[c-97][1];
+      }
+    else
+      {
+        // Turn all segments on for other character
+        LCDMEM[position]   = 0xFF;
+        LCDMEM[position+1] = 0xFA;
+      }
+}
+
 
 #pragma vector = TIMER0_A0_VECTOR
 __interrupt void TIMER0_A0_ISR(void)
 {
     tickIndex++;
     tickChangeFlag = 1;
+}
+
+
+#pragma vector = PORT4_VECTOR
+__interrupt void PORT4_ISR(void)
+{
+ // De-bounce using MSP Library Routine, 200ms @ 1MHz
+
+    if (P4IFG & BIT1) // If Button 1 is pressed
+    {
+        // When BTN1 is pressed
+        playFlag = 1;
+        P4IFG &= ~BIT1; // Clear P1.1 Interrupt flag
+    }
+
+    if (P4IFG & BIT2) // If Button 2 is pressed
+    {
+        // When BTN2 is pressed
+        songChangedFlag = 1;
+        P4IFG &= ~BIT2; // Clear P1.2 Interrupt flag
+    }
+}
+
+void LCDini(void)
+{
+// ******************************************************************************************
+// *****  Basic LCD Initialization Copyright (c) 2014, Texas Instruments Incorporated   *****
+// ******************************************************************************************
+//  This examples configures the LCD in 4-Mux mode.
+//  The internal voltage is sourced to V2 through V4 and V5
+//  is connected to ground. Charge pump is enabled.
+//  It uses LCD pin L0~L21 and L26~L43 as segment pins.
+//  f(LCD) = 32768Hz/((1+1)*2^4) = 1024Hz, ACLK = 32768Hz,
+//  MCLK = SMCLK = default DCODIV 1MHz.
+//
+//      MSP430FR6989 / MSP-EXP430FR6989 Launchpad
+//              -----------------
+//          /|\|                 |
+//           | |              XIN|--
+//  GND      --|RST              |  32768Hz
+//   |         |             XOUT|--
+//   |         |                 |
+//   |         |             COM3|----------------|
+//   |         |             COM2|---------------||
+//   |--4.7uF -|LCDCAP       COM1|--------------|||
+//             |             COM0|-------------||||
+//             |                 |    -------------
+//             |           Sx~Sxx|---| 1 2 3 4 5 6 |
+//             |                 |    -------------
+//             |                 |       TI LCD
+//                                 (See MSP-EXP430FR6989 Schematic)
+//
+//*****************************************************************************
+// Initialize LCD segments 0 - 21; 26 - 43
+   LCDCPCTL0 = 0xFFFF;
+   LCDCPCTL1 = 0xFC3F;
+   LCDCPCTL2 = 0x00FF;
+
+    PJSEL0 = BIT4 | BIT5;                      // Turn on LFXT (Low Frequency Crystal Oscillator)
+// Configure LFXT 32kHz Crystal Oscillator
+   CSCTL0_H = CSKEY >> 8;                      // Unlock CS registers
+   CSCTL4 &= ~LFXTOFF;                         // Enable LFXT  (Low Frequency Crystal Oscillator)
+         do
+           {
+            CSCTL5 &= ~LFXTOFFG;               // Clear LFXT fault flag
+            SFRIFG1 &= ~OFIFG;
+            }
+            while (SFRIFG1 & OFIFG);           // Test oscillator fault flag
+            CSCTL0_H = 0;                      // Lock CS registers
+
+// Initialize LCD_Clock
+// ACLK, Divider = 1, Pre-divider = 16; 4-pin MUX
+            LCDCCTL0 = LCDDIV__1 | LCDPRE__16 | LCD4MUX | LCDLP;
+
+// VLCD generated internally,
+// V2-V4 generated internally, V5 to ground
+// Set VLCD voltage to 2.60V
+// Enable charge pump and select internal reference for it
+           LCDCVCTL     =   VLCD_1 | VLCDREF_0 | LCDCPEN;
+           LCDCCPCTL    = LCDCPCLKSYNC;         // Clock synchronization enabled
+           LCDCMEMCTL   = LCDCLRM;              // Clear LCD memory
+// Turn LCD on
+           LCDCCTL0 |= LCDON;
 }
