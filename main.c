@@ -245,20 +245,20 @@ int main(void)
     // **********               SCROLLS ACROSS DISPLAY                                ***********
     // ******************************************************************************************
 
-        P3DIR &= ~BIT1;                             // Set P1.1 to input direction
-        P3REN |= BIT1;                              // Enable Resistor on P1.1, Button 1
-        P3OUT |= BIT1;                              // Enable Pull-up  on P1.1, Button 1
-        P3DIR &= ~BIT2;                             // Set P1.2 to input direction
-        P3REN |= BIT2;                              // Enable Resistor on P1.1, Button 2
-        P3OUT |= BIT2;                              // Enable Pull-up  on P1.1, Button 2
+        P1DIR &= ~BIT1;                             // Set P1.1 to input direction
+        P1REN |= BIT1;                              // Enable Resistor on P1.1, Button 1
+        P1OUT |= BIT1;                              // Enable Pull-up  on P1.1, Button 1
+        P1DIR &= ~BIT2;                             // Set P1.2 to input direction
+        P1REN |= BIT2;                              // Enable Resistor on P1.1, Button 2
+        P1OUT |= BIT2;                              // Enable Pull-up  on P1.1, Button 2
 
         //  Configure P1.1 & P1.2 for falling edge Interrupt
-            P3IES |=  BIT1;                             // Select Interrupts for HIGH to LOW Transition
-            P3IFG &= ~BIT1;                             // Clear  P1.1 Interrupt flag
-            P3IE  |=  BIT1;                             // Enable P1.1 Interrupt
-            P3IES |=  BIT2;                             // Select Interrupts for HIGH to LOW Transition
-            P3IFG &= ~BIT2;                             // Clear  P1.2 Interrupt flag
-            P3IE  |=  BIT2;                             // Enable P1.2 Interrupt
+            P1IES |=  BIT1;                             // Select Interrupts for HIGH to LOW Transition
+            P1IFG &= ~BIT1;                             // Clear  P1.1 Interrupt flag
+            P1IE  |=  BIT1;                             // Enable P1.1 Interrupt
+            P1IES |=  BIT2;                             // Select Interrupts for HIGH to LOW Transition
+            P1IFG &= ~BIT2;                             // Clear  P1.2 Interrupt flag
+            P1IE  |=  BIT2;                             // Enable P1.2 Interrupt
 
 
 
@@ -268,11 +268,11 @@ int main(void)
     P8DIR |= BIT4;
     P2DIR |= BIT6;
     P2DIR |= BIT7;
-    P1DIR |= BIT3;
+    //P1DIR |= BIT3;
     P2DIR |= BIT4;
     P2DIR |= BIT5;
-    P1DIR |= BIT7;
-    P1DIR |= BIT6;
+    //P1DIR |= BIT7;
+    //P1DIR |= BIT6;
     P2DIR |= BIT2;
     P2DIR |= BIT1;
 
@@ -392,7 +392,7 @@ void playNote()
         }
         if ((song[noteIndex] & P1_3) == P1_3)
         {
-            P1OUT |= BIT3;
+            //P1OUT |= BIT3;
         }
         if ((song[noteIndex] & P2_4) == P2_4)
         {
@@ -404,11 +404,11 @@ void playNote()
         }
         if ((song[noteIndex] & P1_7) == P1_7)
         {
-            P1OUT |= BIT7;
+            //P1OUT |= BIT7;
         }
         if ((song[noteIndex] & P1_6) == P1_6)
         {
-            P1OUT |= BIT6;
+            //P1OUT |= BIT6;
         }
         if ((song[noteIndex] & P2_2) == P2_2)
         {
@@ -429,11 +429,11 @@ void playNote()
         P8OUT &= ~BIT4;
         P2OUT &= ~BIT6;
         P2OUT &= ~BIT7;
-        P1OUT &= ~BIT3;
+        //P1OUT &= ~BIT3;
         P2OUT &= ~BIT4;
         P2OUT &= ~BIT5;
-        P1OUT &= ~BIT7;
-        P1OUT &= ~BIT6;
+        //P1OUT &= ~BIT7;
+        //P1OUT &= ~BIT6;
         P2OUT &= ~BIT2;
         P2OUT &= ~BIT1;
 
@@ -468,7 +468,7 @@ void playNote()
             }
             if ((song[noteIndex] & P1_3T) == P1_3T)
             {
-                P1OUT |= BIT3;
+                //P1OUT |= BIT3;
             }
             if ((song[noteIndex] & P2_4T) == P2_4T)
             {
@@ -480,11 +480,11 @@ void playNote()
             }
             if ((song[noteIndex] & P1_7T) == P1_7T)
             {
-                P1OUT |= BIT7;
+                //P1OUT |= BIT7;
             }
             if ((song[noteIndex] & P1_6T) == P1_6T)
             {
-                P1OUT |= BIT6;
+                //P1OUT |= BIT6;
             }
             if ((song[noteIndex] & P2_2T) == P2_2T)
             {
@@ -501,11 +501,11 @@ void playNote()
             P8OUT &= ~BIT4;
             P2OUT &= ~BIT6;
             P2OUT &= ~BIT7;
-            P1OUT &= ~BIT3;
+            //P1OUT &= ~BIT3;
             P2OUT &= ~BIT4;
             P2OUT &= ~BIT5;
-            P1OUT &= ~BIT7;
-            P1OUT &= ~BIT6;
+            //P1OUT &= ~BIT7;
+            //P1OUT &= ~BIT6;
             P2OUT &= ~BIT2;
             P2OUT &= ~BIT1;
 
@@ -605,24 +605,24 @@ __interrupt void TIMER0_A0_ISR(void)
 }
 
 
-#pragma vector = PORT3_VECTOR
-__interrupt void PORT3_ISR(void)
+#pragma vector = PORT1_VECTOR
+__interrupt void PORT1_ISR(void)
 {
     __delay_cycles(200000);
  // De-bounce using MSP Library Routine, 200ms @ 1MHz
 
-    if (P3IFG & BIT1) // If Button 1 is pressed
+    if (P1IFG & BIT1) // If Button 1 is pressed
     {
         // When BTN1 is pressed
         playFlag = 1;
-        P3IFG &= ~BIT1; // Clear P1.1 Interrupt flag
+        P1IFG &= ~BIT1; // Clear P1.1 Interrupt flag
     }
 
-    if (P3IFG & BIT2) // If Button 2 is pressed
+    if (P1IFG & BIT2) // If Button 2 is pressed
     {
         // When BTN2 is pressed
         songChangedFlag = 1;
-        P3IFG &= ~BIT2; // Clear P1.2 Interrupt flag
+        P1IFG &= ~BIT2; // Clear P1.2 Interrupt flag
     }
 }
 
