@@ -6,8 +6,11 @@
 #define TRILL_LEN 7500
 #define MS 1000 / 8
 
-#define START_LEN 74
-#define START_TEMPO 90
+#define START_LEN 38
+#define START_TEMPO 240
+
+#define REST_LEN 1
+#define REST_TEMPO 90
 
 #define CAROL 0
 #define BING 1
@@ -138,24 +141,17 @@ char text[MAX_LEN];
 int scrollPos;
 int song;
 uint32_t scrollTimeIndex;
+int started;
 
-
+uint32_t restNotes[REST_LEN] =
+{
+ R
+};
 
 uint32_t startUpNotes[START_LEN] =
 {
      R4,
-     LB, LB, LB, LB,
-     CS, CS, CS, CS,
-     DS, DS, DS, DS,
-     E, E, E, E,
-     FS, FS, FS, FS,
-     G, G, G, G,
-     GS, GS, GS, GS,
-     A, A, A, A,
-     B, B, B, B,
-     C, C, C, C,
-     HD, HD, HD, HD,
-     HE, HE, HE, HE,
+     LB, CS, DS, E, FS, G, GS, A, B, C, HD, HE,
      R6,
      HE, HD, C, B, A, GS, G, FS, E, DS, CS, LB,
      R4
@@ -296,6 +292,7 @@ int main(void)
     Song carolOfTheBells;
     Song bingBong;
     Song startUp;
+    Song rest;
 
     carolOfTheBells.notes = carolOfTheBellsNotes;
     carolOfTheBells.length = CAROL_LEN;
@@ -309,16 +306,19 @@ int main(void)
     startUp.length = START_LEN;
     startUp.tempo = START_TEMPO;
 
+    rest.notes = restNotes;
+    rest.length = REST_LEN;
+    rest.tempo = REST_TEMPO;
+
     selectedSong = startUp;
     while (noteIndex < selectedSong.length)
     {
         playNote();
     }
 
-
+    started = 1;
     noteIndex = 0;
-
-    selectedSong = carolOfTheBells;
+    selectedSong = rest;
     songChangedFlag = 0;
     while(1)
     {
@@ -542,15 +542,18 @@ void wait(int numTimePeriods)
     {
         if (scrollTimeIndex >= SCROLL_TIME)
         {
-            scrollTimeIndex = 0;
-            int textLen = strlen(text);
-            int i;
-            for (i = 0; i < 6; i++)
+            if (started)
             {
-                showChar(text[(scrollPos + i) % textLen], Pos[i]);
-            }
+                scrollTimeIndex = 0;
+                int textLen = strlen(text);
+                int i;
+                for (i = 0; i < 6; i++)
+                {
+                    showChar(text[(scrollPos + i) % textLen], Pos[i]);
+                }
 
-            scrollPos = (scrollPos + 1) % textLen;
+                scrollPos = (scrollPos + 1) % textLen;
+            }
         }
         else
         {
