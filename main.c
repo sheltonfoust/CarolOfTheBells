@@ -6,7 +6,7 @@
 #define TRILL_LEN 7500
 #define MS 1000 / 8
 
-#define START_LEN 38
+#define START_LEN 74
 #define START_TEMPO 90
 
 #define CAROL 0
@@ -78,29 +78,29 @@
 
 #define P3_7 HE
 #define P3_6 HD
-#define P3_3 C
+#define P8_4 C
 #define P2_6 B
 #define P2_7 A
-#define P4_7 GS
+#define P1_3 GS
 #define P2_4 G
 #define P2_5 FS
 #define P1_7 E
 #define P1_6 DS
-#define P1_5 CS
+#define P2_2 CS
 #define P2_1 LB
 
 
 #define P3_7T HET
 #define P3_6T HDT
-#define P3_3T C_T
+#define P8_4T C_T
 #define P2_6T B_T
 #define P2_7T A_T
-#define P4_7T GST
+#define P1_3T GST
 #define P2_4T G_T
 #define P2_5T FST
 #define P1_7T E_T
 #define P1_6T DST
-#define P1_5T CST
+#define P2_2T CST
 #define P2_1T LBT
 
 
@@ -142,7 +142,18 @@ uint32_t scrollTimeIndex;
 uint32_t startUpNotes[START_LEN] =
 {
      R4,
-     LB, CS, DS, E, FS, G, GS, A, B, C, HD, HE,
+     LB, LB, LB, LB,
+     CS, CS, CS, CS,
+     DS, DS, DS, DS,
+     E, E, E, E,
+     FS, FS, FS, FS,
+     G, G, G, G,
+     GS, GS, GS, GS,
+     A, A, A, A,
+     B, B, B, B,
+     C, C, C, C,
+     HD, HD, HD, HD,
+     HE, HE, HE, HE,
      R6,
      HE, HD, C, B, A, GS, G, FS, E, DS, CS, LB,
      R4
@@ -235,35 +246,35 @@ int main(void)
     // **********               SCROLLS ACROSS DISPLAY                                ***********
     // ******************************************************************************************
 
-        P4DIR &= ~BIT1;                             // Set P1.1 to input direction
-        P4REN |= BIT1;                              // Enable Resistor on P1.1, Button 1
-        P4OUT |= BIT1;                              // Enable Pull-up  on P1.1, Button 1
-        P4DIR &= ~BIT2;                             // Set P1.2 to input direction
-        P4REN |= BIT2;                              // Enable Resistor on P1.1, Button 2
-        P4OUT |= BIT2;                              // Enable Pull-up  on P1.1, Button 2
+        P3DIR &= ~BIT1;                             // Set P1.1 to input direction
+        P3REN |= BIT1;                              // Enable Resistor on P1.1, Button 1
+        P3OUT |= BIT1;                              // Enable Pull-up  on P1.1, Button 1
+        P3DIR &= ~BIT2;                             // Set P1.2 to input direction
+        P3REN |= BIT2;                              // Enable Resistor on P1.1, Button 2
+        P3OUT |= BIT2;                              // Enable Pull-up  on P1.1, Button 2
 
         //  Configure P1.1 & P1.2 for falling edge Interrupt
-            P4IES |=  BIT1;                             // Select Interrupts for HIGH to LOW Transition
-            P4IFG &= ~BIT1;                             // Clear  P1.1 Interrupt flag
-            P4IE  |=  BIT1;                             // Enable P1.1 Interrupt
-            P4IES |=  BIT2;                             // Select Interrupts for HIGH to LOW Transition
-            P4IFG &= ~BIT2;                             // Clear  P1.2 Interrupt flag
-            P4IE  |=  BIT2;                             // Enable P1.2 Interrupt
+            P3IES |=  BIT1;                             // Select Interrupts for HIGH to LOW Transition
+            P3IFG &= ~BIT1;                             // Clear  P1.1 Interrupt flag
+            P3IE  |=  BIT1;                             // Enable P1.1 Interrupt
+            P3IES |=  BIT2;                             // Select Interrupts for HIGH to LOW Transition
+            P3IFG &= ~BIT2;                             // Clear  P1.2 Interrupt flag
+            P3IE  |=  BIT2;                             // Enable P1.2 Interrupt
 
 
 
     // Set output directions
     P3DIR |= BIT7;
     P3DIR |= BIT6;
-    P3DIR |= BIT3;
+    P8DIR |= BIT4;
     P2DIR |= BIT6;
     P2DIR |= BIT7;
-    P4DIR |= BIT7;
+    P1DIR |= BIT3;
     P2DIR |= BIT4;
     P2DIR |= BIT5;
     P1DIR |= BIT7;
     P1DIR |= BIT6;
-    P1DIR |= BIT5;
+    P2DIR |= BIT2;
     P2DIR |= BIT1;
 
     P1OUT = 0;
@@ -370,9 +381,9 @@ void playNote()
         {
             P3OUT |= BIT6;
         }
-        if ((song[noteIndex] & P3_3) == P3_3)
+        if ((song[noteIndex] & P8_4) == P8_4)
         {
-            P3OUT |= BIT3;
+            P8OUT |= BIT4;
         }
         if ((song[noteIndex] & P2_6) == P2_6)
         {
@@ -382,9 +393,9 @@ void playNote()
         {
             P2OUT |= BIT7;
         }
-        if ((song[noteIndex] & P4_7) == P4_7)
+        if ((song[noteIndex] & P1_3) == P1_3)
         {
-            P4OUT |= BIT7;
+            P1OUT |= BIT3;
         }
         if ((song[noteIndex] & P2_4) == P2_4)
         {
@@ -402,9 +413,9 @@ void playNote()
         {
             P1OUT |= BIT6;
         }
-        if ((song[noteIndex] & P1_5) == P1_5)
+        if ((song[noteIndex] & P2_2) == P2_2)
         {
-            P1OUT |= BIT5;
+            P2OUT |= BIT2;
         }
         if ((song[noteIndex] & P2_1) == P2_1)
         {
@@ -418,15 +429,15 @@ void playNote()
 
         P3OUT &= ~BIT7;
         P3OUT &= ~BIT6;
-        P3OUT &= ~BIT3;
+        P8OUT &= ~BIT4;
         P2OUT &= ~BIT6;
         P2OUT &= ~BIT7;
-        P4OUT &= ~BIT7;
+        P1OUT &= ~BIT3;
         P2OUT &= ~BIT4;
         P2OUT &= ~BIT5;
         P1OUT &= ~BIT7;
         P1OUT &= ~BIT6;
-        P1OUT &= ~BIT5;
+        P2OUT &= ~BIT2;
         P2OUT &= ~BIT1;
 
         wait(4);
@@ -446,9 +457,9 @@ void playNote()
             {
                 P3OUT |= BIT6;
             }
-            if ((song[noteIndex] & P3_3T) == P3_3T)
+            if ((song[noteIndex] & P8_4T) == P8_4T)
             {
-                P3OUT |= BIT3;
+                P8OUT |= BIT4;
             }
             if ((song[noteIndex] & P2_6T) == P2_6T)
             {
@@ -458,9 +469,9 @@ void playNote()
             {
                 P2OUT |= BIT7;
             }
-            if ((song[noteIndex] & P4_7T) == P4_7T)
+            if ((song[noteIndex] & P1_3T) == P1_3T)
             {
-                P4OUT |= BIT7;
+                P1OUT |= BIT3;
             }
             if ((song[noteIndex] & P2_4T) == P2_4T)
             {
@@ -478,9 +489,9 @@ void playNote()
             {
                 P1OUT |= BIT6;
             }
-            if ((song[noteIndex] & P1_5T) == P1_5T)
+            if ((song[noteIndex] & P2_2T) == P2_2T)
             {
-                P1OUT |= BIT5;
+                P2OUT |= BIT2;
             }
             if ((song[noteIndex] & P2_1T) == P2_1T)
             {
@@ -490,15 +501,15 @@ void playNote()
 
             P3OUT &= ~BIT7;
             P3OUT &= ~BIT6;
-            P3OUT &= ~BIT3;
+            P8OUT &= ~BIT4;
             P2OUT &= ~BIT6;
             P2OUT &= ~BIT7;
-            P4OUT &= ~BIT7;
+            P1OUT &= ~BIT3;
             P2OUT &= ~BIT4;
             P2OUT &= ~BIT5;
             P1OUT &= ~BIT7;
             P1OUT &= ~BIT6;
-            P1OUT &= ~BIT5;
+            P2OUT &= ~BIT2;
             P2OUT &= ~BIT1;
 
             wait(4);
@@ -597,23 +608,23 @@ __interrupt void TIMER0_A0_ISR(void)
 }
 
 
-#pragma vector = PORT4_VECTOR
-__interrupt void PORT4_ISR(void)
+#pragma vector = PORT3_VECTOR
+__interrupt void PORT3_ISR(void)
 {
  // De-bounce using MSP Library Routine, 200ms @ 1MHz
 
-    if (P4IFG & BIT1) // If Button 1 is pressed
+    if (P3IFG & BIT1) // If Button 1 is pressed
     {
         // When BTN1 is pressed
         playFlag = 1;
-        P4IFG &= ~BIT1; // Clear P1.1 Interrupt flag
+        P3IFG &= ~BIT1; // Clear P1.1 Interrupt flag
     }
 
-    if (P4IFG & BIT2) // If Button 2 is pressed
+    if (P3IFG & BIT2) // If Button 2 is pressed
     {
         // When BTN2 is pressed
         songChangedFlag = 1;
-        P4IFG &= ~BIT2; // Clear P1.2 Interrupt flag
+        P3IFG &= ~BIT2; // Clear P1.2 Interrupt flag
     }
 }
 
