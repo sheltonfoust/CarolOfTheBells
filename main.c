@@ -268,11 +268,11 @@ int main(void)
     P8DIR |= BIT4;
     P2DIR |= BIT6;
     P2DIR |= BIT7;
-    //P1DIR |= BIT3;
+    P1DIR |= BIT3;
     P2DIR |= BIT4;
     P2DIR |= BIT5;
-    //P1DIR |= BIT7;
-    //P1DIR |= BIT6;
+    P1DIR |= BIT7;
+    P1DIR |= BIT6;
     P2DIR |= BIT2;
     P2DIR |= BIT1;
 
@@ -392,7 +392,7 @@ void playNote()
         }
         if ((song[noteIndex] & P1_3) == P1_3)
         {
-            //P1OUT |= BIT3;
+            P1OUT |= BIT3;
         }
         if ((song[noteIndex] & P2_4) == P2_4)
         {
@@ -404,11 +404,11 @@ void playNote()
         }
         if ((song[noteIndex] & P1_7) == P1_7)
         {
-            //P1OUT |= BIT7;
+            P1OUT |= BIT7;
         }
         if ((song[noteIndex] & P1_6) == P1_6)
         {
-            //P1OUT |= BIT6;
+            P1OUT |= BIT6;
         }
         if ((song[noteIndex] & P2_2) == P2_2)
         {
@@ -429,11 +429,11 @@ void playNote()
         P8OUT &= ~BIT4;
         P2OUT &= ~BIT6;
         P2OUT &= ~BIT7;
-        //P1OUT &= ~BIT3;
+        P1OUT &= ~BIT3;
         P2OUT &= ~BIT4;
         P2OUT &= ~BIT5;
-        //P1OUT &= ~BIT7;
-        //P1OUT &= ~BIT6;
+        P1OUT &= ~BIT7;
+        P1OUT &= ~BIT6;
         P2OUT &= ~BIT2;
         P2OUT &= ~BIT1;
 
@@ -468,7 +468,7 @@ void playNote()
             }
             if ((song[noteIndex] & P1_3T) == P1_3T)
             {
-                //P1OUT |= BIT3;
+                P1OUT |= BIT3;
             }
             if ((song[noteIndex] & P2_4T) == P2_4T)
             {
@@ -480,11 +480,11 @@ void playNote()
             }
             if ((song[noteIndex] & P1_7T) == P1_7T)
             {
-                //P1OUT |= BIT7;
+                P1OUT |= BIT7;
             }
             if ((song[noteIndex] & P1_6T) == P1_6T)
             {
-                //P1OUT |= BIT6;
+                P1OUT |= BIT6;
             }
             if ((song[noteIndex] & P2_2T) == P2_2T)
             {
@@ -501,11 +501,11 @@ void playNote()
             P8OUT &= ~BIT4;
             P2OUT &= ~BIT6;
             P2OUT &= ~BIT7;
-            //P1OUT &= ~BIT3;
+            P1OUT &= ~BIT3;
             P2OUT &= ~BIT4;
             P2OUT &= ~BIT5;
-            //P1OUT &= ~BIT7;
-            //P1OUT &= ~BIT6;
+            P1OUT &= ~BIT7;
+            P1OUT &= ~BIT6;
             P2OUT &= ~BIT2;
             P2OUT &= ~BIT1;
 
