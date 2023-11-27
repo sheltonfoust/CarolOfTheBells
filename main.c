@@ -30,11 +30,12 @@
 #define WELCOME_MSG "PRESS BUTTON TO START "
 #define BING_MSG "BING BONG "
 #define CAROL_MSG "CAROL OF THE BELLS "
+#define PAUSE_MSG "PAUSED "
 
 #define E_6 11
 #define D_6 10
 #define C_6 9
-#define B_5 8 
+#define B_5 8
 #define A_5 7
 #define GS5 6
 #define G_5 5
@@ -128,10 +129,11 @@ extern int playState = 0;
 extern int noteIndex = 0;
 extern int32_t tickIndex = -1;
 extern int tickChangeFlag = 0;
-extern int playFlag = 0;
+extern int playFlag = 1;
 extern int songChangedFlag = 0;
 Song selectedSong;
 extern uint32_t trillStates = 0;
+extern char  display[6]= "PAUSED";
 
 
 // The Position accounts for Offset of Alphanumeric character positions in the LCD Memory Map
@@ -273,6 +275,7 @@ int main(void)
     P1DIR |= BIT6;
     P2DIR |= BIT2;
     P2DIR |= BIT1;
+    P1DIR |= BIT0;
 
 
     TA0CCR0 = MS;
@@ -358,8 +361,14 @@ int main(void)
         {
             noteIndex = 0;
         }
-
-        playNote();
+        if(playFlag == 1){
+            playNote();
+            P1OUT &= ~BIT0;
+        }
+        else{
+            wait(1);
+            P1OUT |= BIT0;
+        }
 
     }
 }
@@ -528,8 +537,6 @@ void playNote()
 
 
         noteIndex++;
-
-
     }
 }
 
@@ -614,8 +621,10 @@ const char  lower[26][2]  = {0x21,0x12, 0x3F,0x00, 0x1B,0x00, 0x7B,0x00, 0x1A,0x
 #pragma vector = TIMER0_A0_VECTOR
 __interrupt void TIMER0_A0_ISR(void)
 {
+
     tickIndex++;
     tickChangeFlag = 1;
+
 }
 
 
@@ -628,7 +637,11 @@ __interrupt void PORT1_ISR(void)
     if (P1IFG & BIT1) // If Button 1 is pressed
     {
         // When BTN1 is pressed
-        playFlag = 1;
+        if(playFlag == 0)
+            playFlag = 1;
+        else{
+            playFlag = 0;
+        }
         P1IFG &= ~BIT1; // Clear P1.1 Interrupt flag
     }
 
@@ -636,6 +649,7 @@ __interrupt void PORT1_ISR(void)
     {
         // When BTN2 is pressed
         songChangedFlag = 1;
+        playFlag = 0;
         P1IFG &= ~BIT2; // Clear P1.2 Interrupt flag
     }
 }
