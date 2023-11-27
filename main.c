@@ -233,7 +233,6 @@ int main(void)
     WDTCTL = WDTPW | WDTHOLD;                   // Stop Watchdog timer
     PM5CTL0 &= ~LOCKLPM5;                       // Disable the GPIO power-on default high-impedance mode
 
-    __enable_interrupt();
 
 
 
@@ -277,14 +276,12 @@ int main(void)
     P2DIR |= BIT2;
     P2DIR |= BIT1;
 
-    P1OUT = 0;
-    P2OUT = 0;
-    P3OUT = 0;
-    P4OUT = 0;
 
     TA0CCR0 = MS;
     TA0CCTL0 |= CCIE;
     TA0CTL = TASSEL_2 + ID_3 + MC_1; //Select SMCLK, SMCLK/1, Up Mode
+
+    __enable_interrupt();
 
 
     strncpy(text, WELCOME_MSG, strlen(WELCOME_MSG));
@@ -611,6 +608,7 @@ __interrupt void TIMER0_A0_ISR(void)
 #pragma vector = PORT3_VECTOR
 __interrupt void PORT3_ISR(void)
 {
+    __delay_cycles(200000);
  // De-bounce using MSP Library Routine, 200ms @ 1MHz
 
     if (P3IFG & BIT1) // If Button 1 is pressed
