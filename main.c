@@ -25,6 +25,8 @@
 #define SCROLL_TIME 250000
 
 #define WELCOME_MSG "PRESS BUTTON TO START "
+#define BING_MSG "BING BONG "
+#define CAROL_MSG "CAROL OF THE BELLS "
 
 #define E_6 11
 #define D_6 10
@@ -330,15 +332,24 @@ int main(void)
             if (song == NUM_SONGS)
             {
                 song = 0;
+
             }
 
             if (song == BING)
             {
                 selectedSong = bingBong;
+                strncpy(text, BING_MSG, strlen(BING_MSG));
+                text[strlen(BING_MSG)] = 0;
+                scrollPos = 0;
+                scrollTimeIndex = 0;
             }
             else if (song == CAROL)
             {
                 selectedSong = carolOfTheBells;
+                strncpy(text, CAROL_MSG, strlen(CAROL_MSG));
+                text[strlen(CAROL_MSG)] = 0;
+                scrollPos = 0;
+                scrollTimeIndex = 0;
             }
 
         }
