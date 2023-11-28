@@ -13,11 +13,11 @@
 #define REST_TEMPO 90
 
 #define CAROL 0
-#define BING 1
+#define HOUSE 1
 #define NUM_SONGS 2
 
-#define BING_LEN 24
-#define BING_TEMPO 70
+#define HOUSE_LEN 21 * 6 + 2
+#define HOUSE_TEMPO 120
 
 #define CAROL_LEN 41 * 6
 #define CAROL_TEMPO 120
@@ -27,10 +27,9 @@
 #define MAX_LEN 50
 #define SCROLL_TIME 250000
 
-#define WELCOME_MSG "PRESS BUTTON TO START "
-#define BING_MSG "BING BONG "
+#define WELCOME_MSG "PRESS RIGHT BUTTON TO PICK SONG "
+#define HOUSE_MSG "UP ON THE HOUSETOP "
 #define CAROL_MSG "CAROL OF THE BELLS "
-#define PAUSE_MSG "PAUSED "
 
 #define E_6 11
 #define D_6 10
@@ -216,12 +215,30 @@ uint32_t carolOfTheBellsNotes[CAROL_LEN] =
         R6,
     };
 
-uint32_t bingBongNotes[BING_LEN] =
+uint32_t upOnTheHousetopNotes[HOUSE_LEN] =
 {
-         HE,  R,     HE, HE,     HD, C,
-         B,  R,      B,  B,      A,  G,
-         A,  R,      A,  A,      B,  A,
-         G,  R,      FS, G,      E,  R,
+         HD, R,     HD, HE,     HD, R,
+         B,  A,     G,  R,      B,  R,
+         HD, R3,                HE, R,
+         HE, R,     HD, R,      B,  R,
+         A,  R,     HD, R,      HD, R,
+         R2,        HD, R,      HD, HE,
+         HD, R,     B,  A,      G,  R,
+         B,  R,     HD, R3,
+         HE, R,     HE, HE,     HD, HD,
+         B,  R,     A,  R,      HD, R,
+         G, R3,                 C,  R,
+         C,  R,     HE, R3,
+         HD, R,     HD, HD,     B,  R,
+         R2,        A,  R,      A,  R,
+         C, R3,                 B,  R,
+         HD, HD,     G,  R,     B,  R,
+         HD, R,     HD, HE,     HD, R,
+         B,  R,     C,  R ,     HD, R,
+         HE, R3,                HD, R,
+         HD, HE,    HD, R,      B,  B,
+         A,  R,     HD, R,      G,  R,
+         R2         // ends two notes into measure
 };
 
 
@@ -293,7 +310,7 @@ int main(void)
 
 
     Song carolOfTheBells;
-    Song bingBong;
+    Song upOnTheHouseTop;
     Song startUp;
     Song rest;
 
@@ -301,9 +318,9 @@ int main(void)
     carolOfTheBells.length = CAROL_LEN;
     carolOfTheBells.tempo = CAROL_TEMPO;
 
-    bingBong.notes = bingBongNotes;
-    bingBong.length = BING_LEN;
-    bingBong.tempo = BING_TEMPO;
+    upOnTheHouseTop.notes = upOnTheHousetopNotes;
+    upOnTheHouseTop.length = HOUSE_LEN;
+    upOnTheHouseTop.tempo = HOUSE_TEMPO;
 
     startUp.notes = startUpNotes;
     startUp.length = START_LEN;
@@ -338,11 +355,11 @@ int main(void)
 
             }
 
-            if (song == BING)
+            if (song == HOUSE)
             {
-                selectedSong = bingBong;
-                strncpy(text, BING_MSG, strlen(BING_MSG));
-                text[strlen(BING_MSG)] = 0;
+                selectedSong = upOnTheHouseTop;
+                strncpy(text, HOUSE_MSG, strlen(HOUSE_MSG));
+                text[strlen(HOUSE_MSG)] = 0;
                 scrollPos = 0;
                 scrollTimeIndex = 0;
             }
