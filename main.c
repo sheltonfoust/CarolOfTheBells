@@ -23,7 +23,7 @@
 #define CAROL_LEN 41 * 6
 #define CAROL_TEMPO 120
 
-#define DRUM_LEN 188
+#define DRUM_LEN 198
 #define DRUM_TEMPO 180
 
 #define NUMBELLS 12
@@ -247,7 +247,8 @@ uint16_t littleDrummerBoyNotes[DRUM_LEN] =
         R,DS,R,DS,E,DS,E,R,
         DS,R,R6,//LONGBIT
 
-        CS,LB,CS,R,LB
+        CS,LB,CS,R,LB,
+        R8, R2
 
 };
 
