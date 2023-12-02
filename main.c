@@ -14,13 +14,17 @@
 
 #define CAROL 0
 #define HOUSE 1
-#define NUM_SONGS 2
+#define DRUM 2
+#define NUM_SONGS 3
 
 #define HOUSE_LEN 21 * 6 + 2
 #define HOUSE_TEMPO 120
 
 #define CAROL_LEN 41 * 6
 #define CAROL_TEMPO 120
+
+#define DRUM_LEN 188
+#define DRUM_TEMPO 180
 
 #define NUMBELLS 12
 
@@ -30,6 +34,7 @@
 #define WELCOME_MSG "PRESS RIGHT BUTTON TO PICK SONG "
 #define HOUSE_MSG "UP ON THE HOUSETOP "
 #define CAROL_MSG "CAROL OF THE BELLS "
+#define DRUM_MSG "LITTLE DRUMMER BOY "
 
 #define E_6 11
 #define D_6 10
@@ -57,19 +62,7 @@
 #define CS      (1 << CS4)
 #define LB      (1 << B_4)
 
-// For some reason I can't bit shift over 16
-#define HET     0b100000000000000000000000
-#define HDT     0b10000000000000000000000
-#define C_T     0b1000000000000000000000
-#define B_T     0b100000000000000000000
-#define A_T     0b10000000000000000000
-#define GST     0b1000000000000000000
-#define G_T     0b100000000000000000
-#define FST     0b10000000000000000
-#define E_T     0b1000000000000000
-#define DST     0b100000000000000
-#define CST     0b10000000000000
-#define LBT     0b1000000000000
+
 
 
 
@@ -95,24 +88,13 @@
 #define P2_1 LB
 
 
-#define P3_7T HET
-#define P3_6T HDT
-#define P8_4T C_T
-#define P2_6T B_T
-#define P2_7T A_T
-#define P1_3T GST
-#define P2_4T G_T
-#define P2_5T FST
-#define P1_7T E_T
-#define P1_6T DST
-#define P2_2T CST
-#define P2_1T LBT
+
 
 
 
 typedef struct _Song
 {
-    uint32_t* notes;
+    uint16_t* notes;
     int length;
     int tempo;
 } Song;
@@ -144,12 +126,12 @@ int song;
 uint32_t scrollTimeIndex;
 int started;
 
-uint32_t restNotes[REST_LEN] =
+uint16_t restNotes[REST_LEN] =
 {
  R
 };
 
-uint32_t startUpNotes[START_LEN] =
+uint16_t startUpNotes[START_LEN] =
 {
      R4,
      LB, CS, DS, E, FS, G, GS, A, B, C, HD, HE,
@@ -160,7 +142,7 @@ uint32_t startUpNotes[START_LEN] =
 
 
 
-uint32_t carolOfTheBellsNotes[CAROL_LEN] =
+uint16_t carolOfTheBellsNotes[CAROL_LEN] =
     {
         R6,
         G,  R,      FS, G,      E,  R, // 12 measures of main theme
@@ -215,7 +197,7 @@ uint32_t carolOfTheBellsNotes[CAROL_LEN] =
         R6,
     };
 
-uint32_t upOnTheHousetopNotes[HOUSE_LEN] =
+uint16_t upOnTheHousetopNotes[HOUSE_LEN] =
 {
          HD, R,     HD, HE,     HD, R,
          B,  A,     G,  R,      B,  R,
@@ -241,9 +223,33 @@ uint32_t upOnTheHousetopNotes[HOUSE_LEN] =
          R2         // ends two notes into measure
 };
 
+uint16_t littleDrummerBoyNotes[DRUM_LEN] =
+{
+        R6,
+        LB,R4,R,CS,R,DS,R3,DS,R,
+        DS,R,E,DS,E,R,DS,R3,
+        R2,R8,//firstbit
 
+        LB,R,LB,R,CS,R,DS,R,
+        DS,R,DS,R,DS,R,E,DS,
+        E,R,DS,R3,R4,R6,//secondbit
 
+        CS,R,
+        DS,R,E,R,FS,R,FS,R,
+        FS,R,GS,R,FS,E,DS,R,
+        CS,R8,R4,R,//thirdbit
 
+        CS,R,DS,R,E,R,FS,R,
+        FS,R,FS,R,GS,R,A,GS,
+        FS,R,E,R3,GS,FS,E,R,
+        DS,R3,FS,E,DS,R,CS,R4,R,
+        R6,LB,R4,R,CS,R,DS,R,DS,
+        R,DS,R,DS,E,DS,E,R,
+        DS,R,R6,//LONGBIT
+
+        CS,LB,CS,R,LB
+
+};
 
 int main(void)
 {
@@ -308,7 +314,7 @@ int main(void)
 
 
 
-
+    Song littleDrummerBoy;
     Song carolOfTheBells;
     Song upOnTheHouseTop;
     Song startUp;
@@ -329,6 +335,10 @@ int main(void)
     rest.notes = restNotes;
     rest.length = REST_LEN;
     rest.tempo = REST_TEMPO;
+
+    littleDrummerBoy.notes = littleDrummerBoyNotes;
+    littleDrummerBoy.length = DRUM_LEN;
+    littleDrummerBoy.tempo = DRUM_TEMPO;
 
     selectedSong = startUp;
     while (noteIndex < selectedSong.length)
@@ -371,6 +381,14 @@ int main(void)
                 scrollPos = 0;
                 scrollTimeIndex = 0;
             }
+            else if (song == DRUM)
+            {
+                selectedSong = littleDrummerBoy;
+                strncpy(text, DRUM_MSG, strlen(DRUM_MSG));
+                text[strlen(DRUM_MSG)] = 0;
+                scrollPos = 0;
+                scrollTimeIndex = 0;
+            }
 
         }
 
@@ -393,7 +411,7 @@ int main(void)
 
 void playNote()
 {
-    uint32_t* song = selectedSong.notes;
+    uint16_t* song = selectedSong.notes;
     int period = 30000 / selectedSong.tempo;
     int32_t bigIntPeriod = period;
     int32_t msperiod = bigIntPeriod * 1000;
@@ -482,6 +500,7 @@ void playNote()
         {
             trillCounter -= 1;
 
+            /*
             if ((song[noteIndex] & P3_7T) == P3_7T)
             {
                 P3OUT |= BIT7;
@@ -531,8 +550,10 @@ void playNote()
             {
                 P2OUT |= BIT1;
             }
+            */
             wait(1);
 
+            /*
             P3OUT &= ~BIT7;
             P3OUT &= ~BIT6;
             P8OUT &= ~BIT4;
@@ -545,7 +566,7 @@ void playNote()
             P1OUT &= ~BIT6;
             P2OUT &= ~BIT2;
             P2OUT &= ~BIT1;
-
+            */
             wait(4);
             wait(4);
         }
